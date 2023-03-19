@@ -1,0 +1,64 @@
+
+#include <Arduino.h>
+#include <SensirionI2CScd4x.h>
+#include <Wire.h>
+//#include <SoftWire.h>
+#include <AsyncDelay.h>
+#include <EEPROM.h>
+#include <avr/sfr_defs.h>
+#include <math.h>
+
+
+uint8_t sdaPin = 20;
+uint8_t sclPin = 21;
+
+//SoftWire i2c(sdaPin, sclPin);
+
+SensirionI2CScd4x scd4x;
+
+void setup() {
+  Serial.begin(1200);
+  Wire.begin();
+  scd4x.begin(Wire);
+
+  //  i2c.begin();
+  //  i2c.setTimeout_ms(200);
+
+  uint16_t error;
+  error = scd4x.startPeriodicMeasurement();
+}
+
+int current_eeprom_addy = 0;
+
+void loop() {
+  uint16_t co2;
+  float temperature;
+  float humidity;
+
+  uint16_t error;
+
+    error = scd4x.readMeasurement(co2, temperature, humidity);
+      if (error) {
+          Serial.print("Error trying to execute readMeasurement(): ");
+          Serial.println("Error");
+      } else if (co2 == 0) {
+          Serial.println("Invalid sample detected, skipping.");
+      } else {
+          Serial.print("\nCo2:");
+          Serial.print(co2);
+          Serial.print("\t");
+          Serial.print("Temperature:");
+          Serial.print(temperature);
+          Serial.print("\t");
+          Serial.print("Humidity:");
+          Serial.println(humidity);
+          if (current_eeprom_addy <= E2END) EEPROM.write(current_eeprom_addy, round(co2 / 10));
+      }
+  
+      delay(12343);
+
+      current_eeprom_addy = current_eeprom_addy + 1;
+      
+      // Use this overwrite old readings with new readings when out of memory
+//      current_eeprom_addy = (current_eeprom_addy + 1) % E2END; 
+}
