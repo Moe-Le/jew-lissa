@@ -1,0 +1,18 @@
+#include <EEPROM.h>
+
+void setup() {
+  // put your setup code here, to run once:
+  Serial.begin(1200);
+  // put your main code here, to run repeatedly:
+  for (int i = 0; i <= E2END; i++) {
+    int stored_reading = EEPROM.read(i);
+//    Serial.print("\nSTORED CO2 READING #");
+//    Serial.print(i);
+    Serial.print("\n");
+    Serial.print(stored_reading * 10);
+  }
+  
+}
+
+void loop() {
+}
